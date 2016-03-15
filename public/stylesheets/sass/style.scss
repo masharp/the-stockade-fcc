@@ -1,0 +1,44 @@
+$primary-color: white;
+$secondary-color: #1BB248;
+$tertiary-color: gray;
+
+$font: "Montserrat", sans-serif;
+$title-font: "IM Fell Great Primer", serif;
+
+body, html {
+  font-family: $font;
+  background-color: $secondary-color;
+  color: $primary-color;
+  font-size: 15px;
+}
+
+#top {
+  width: 100%;
+  text-align: center;
+
+  #main-title {
+    font-size: 3em;
+    font-family: $title-font;
+    margin-bottom: .2em;
+  }
+  #main-subtitle {
+    font-size: 1.2em;
+  }
+}
+
+/* FOOTER */
+.footer {
+  margin-top: 6em;
+  text-align: center;
+}
+a {
+  text-decoration: none;
+  color: darken($tertiary-color, 20);
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+.hidden {
+  display: none;
+}

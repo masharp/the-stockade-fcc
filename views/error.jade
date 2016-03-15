@@ -1,0 +1,17 @@
+doctype html
+
+html
+  head
+    title= title
+    
+    meta(charset="utf-8")
+    meta(description content="A nightlife management app.")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    
+    link(rel="stylesheet", href="/stylesheets/style.css")
+
+body
+  #error.container
+    h1= error.status
+    h2= message
+    p There seems to problem!#[br]Please check your internet connection and URL.

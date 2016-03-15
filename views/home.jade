@@ -1,0 +1,42 @@
+doctype html
+
+html
+  head
+    title= title
+    
+    meta(charset="utf-8")
+    meta(description content="realtime stock market watcher")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    
+    <!--[if lt IE 7]>
+    <script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE7.js"></script>
+    <![endif]-->
+    
+    <!--[if lt IE 8]>
+    <script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE8.js"></script>
+    <![endif]-->
+    
+    <!--[if lt IE 9]>
+    <script src="http://ie7-js.googlecode.com/svn/version/2.1(beta4)/IE9.js"></script>
+    <![endif]-->
+    
+    //CDNs -----------------------------------------------
+    link(rel="stylesheet", type="text/css", href="https://fonts.googleapis.com/css?family=Montserrat")
+    link(href="https://fonts.googleapis.com/css?family=IM+Fell+Great+Primer:400italic" rel="stylesheet" type="text/css")
+    
+    //Locals ------------------------------------------------
+    link(rel="stylesheet", href="/stylesheets/style.css")
+
+    body
+      #top
+        h2#main-title The Stockade
+        span#main-subtitle
+      #loader
+      
+      p.footer
+        | Source code can be found #[a(href="https://github.com/masharp/map-the-night-fcc", target="_blank") here]
+        br
+        | Created by #[a(href="http://www.softwareontheshore.com", target="_blank") Software on the Shore] for 
+        | #[a(href="http://www.freecodecamp.com", target="_blank") FreeCodeCamp].
+
+    script(src="/javascripts/bundle.js")
