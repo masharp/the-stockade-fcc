@@ -1,0 +1,31 @@
+body, html {
+  font-family: "";
+  background-color: #1BB248;
+  color: white;
+  font-size: 15px; }
+
+#top {
+  width: 100%;
+  text-align: center; }
+  #top #main-title {
+    font-size: 3em;
+    font-family: "";
+    margin-bottom: .2em; }
+  #top #main-subtitle {
+    font-size: 1.2em; }
+
+/* FOOTER */
+.footer {
+  margin-top: 6em;
+  text-align: center; }
+
+a {
+  text-decoration: none;
+  color: #4d4d4d; }
+  a:hover {
+    text-decoration: underline; }
+
+.hidden {
+  display: none; }
+
+/*# sourceMappingURL=style.css.map */

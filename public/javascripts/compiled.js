@@ -1,4 +1,5 @@
 'use strict';
+
 (function iife() {
   /* define browserify modules to pack */
   const ReactDOM = require('react-dom');
@@ -12,16 +13,13 @@
   class Controller extends React.Component {
     constructor(props) {
       super(props);
-      this.state = { };
+      this.state = {};
     }
     render() {
-      return (
-        React.createElement('div', { id: 'main' }
-        )
-      );
+      return React.createElement('div', { id: 'main' });
     }
   }
 
-  Controller.propTypes = { };
-  ReactDOM.render(React.createElement(Controller, { }), document.getElementById('loader'));
-}());
+  Controller.propTypes = {};
+  ReactDOM.render(React.createElement(Controller, {}), document.getElementById('loader'));
+})();

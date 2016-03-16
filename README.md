@@ -6,6 +6,12 @@
     Powered by Node.js, React.js, D3, and WebSockets. Part of the FreeCodeCamp curriculum.
     A working prototype of this application can be found [here](http://the-stockade.herokuapp.com)
 
+    User Stories:
+      * User Story: I can view a graph displaying the recent trend lines for each added stock.
+      * User Story: I can add new stocks by their symbol name.
+      * User Story: I can remove stocks.
+      * User Story: I can see changes in real-time when any other user adds or removes a stock.
+
     www.softwareontheshore.com
     Michael Sharp 2016
 

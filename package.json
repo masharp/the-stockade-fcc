@@ -2,25 +2,31 @@
   "name": "the-stockade",
   "version": "0.0.1",
   "private": true,
-  "homepage": "map-the-night.herokuapp.com",
+  "homepage": "http://the-stockade.herokuapp.com",
   "bugs": {
-    "url": "https://github.com/masharp/map-the-night-fcc/issues"
+    "url": "https://github.com/masharp/the-stockade-fcc/issues"
   },
   "author": "Michael Sharp (http://softwareontheshore.com)",
-  "license": "GPL-3.0",
+  "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/masharp/map-the-night-fcc"
+    "url": "https://github.com/masharp/the-stockade-fcc"
   },
   "scripts": {
     "sass": "sass --watch ./public/stylesheets/sass/style.scss:./public/stylesheets/style.css",
-    "bundle": "browserify ./public/javascripts/global.js -o ./public/javascripts/bundle.js",
+    "scan": "eslint ./public/javascripts/global.js",
+    "bundle": "babel ./public/javascripts/global.js -o ./public/javascripts/compiled.js && browserify ./public/javascripts/compiled.js -o ./public/javascripts/bundle.js",
     "start": "node ./bin/www",
     "test": "jasmine JASMINE_CONFIG_PATH=test/jasmine.json"
   },
   "engines": {
     "node": "~5.0.0",
     "npm": "~3.5.3"
+  },
+  "eslintConfig": {
+    "rules": {
+        "strict": "off"
+    }
   },
   "dependencies": {
     "body-parser": "~1.13.2",
@@ -30,21 +36,26 @@
     "dotenv": "~2.0.0",
     "express": "~4.13.1",
     "express-session": "^1.13.0",
+    "express-ws": "~1.0.0",
+    "faye": "~1.1.2",
     "jade": "~1.11.0",
     "mongodb": "~2.1.7",
     "morgan": "~1.6.1",
-    "node-sass": "^3.4.2",
     "parseurl": "~1.3.0",
     "react": "~0.14.7",
     "react-dom": "~0.14.7",
+    "react-d3": "~0.4.0",
     "react-redux": "~4.4.0",
     "redux": "~3.3.1",
     "request": "^2.69.0",
-    "serve-favicon": "~2.3.0",
-    "yelp": "^1.0.1"
+    "serve-favicon": "~2.3.0"
   },
   "devDependencies": {
-    "jasmine": "~2.4.1",
-    "expect": "~1.14.0"
+    "babel-cli": "~6.6.4",
+    "eslint": "~2.4.0",
+    "eslint-config-airbnb": "^6.1.0",
+    "eslint-plugin-react": "latest",
+    "expect": "~1.14.0",
+    "jasmine": "~2.4.1"
   }
 }
