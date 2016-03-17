@@ -31,28 +31,30 @@ server.on('listening', onListening);
 /* Set up Socket.io WebSocket */
 io.on('connection', function(socket) {
   console.log('USER CONNECTED');
-  let stockSymbols = ['AAPL', 'GOOG', 'MSFT', 'RHT'];
 
-  fetchStockData(stockSymbols).then((response) => {
-    console.log(typeof response);
-    // io.emit('')
+  fetchStockData().then((response) => {
+    io.emit('update', response);
   });
 
 
   /* listen for updates to the tracked Symbols */
-  socket.on('symbols:added', function(symbol) {
-    console.log('NEW SYMBOL: ' + symbol);
-    stockSymbols.push(symbol);
+  socket.on('added', function(symbol) {
 
-    io.emit('symbols:update', { symbols: stockSymbols });
+    db.updateSymbols('ADD', symbol).then((result) => {
+      if(result === 'Success') {
+        //io.emit
+      }
+    });
   });
 
   /*lsiten for remova l of a tracked symbol */
-  socket.on('symbols:removed', function(symbol) {
-    console.log('REMOVE SYMBOL: ' + symbol);
-    stockSymbols = stockSymbols.filter((r) => r !== symbol);
+  socket.on('removed', function(symbol) {
 
-    io.emit('symbols:update', { symbols: stockSymbols });
+    db.updateSymbols('REMOVE', symbol).then((result) => {
+      if(result === 'Success') {
+        //io.emit
+      }
+    });
   });
 
   /* Listen for User Disconnect */
@@ -61,14 +63,22 @@ io.on('connection', function(socket) {
   });
 });
 
-function fetchStockData(symbols) {
-  let symbolsStr = symbols.join('+');
-  let requestString = BASE_URL + symbolsStr + URL_FORMATTER;
-
+function fetchStockData() {
+  //STOCK DATA PROMISE
   return new Promise( (resolve, reject) => {
-    request.get(requestString, (error, response, body) => {
-      if(error) reject(error);
-      resolve(body);
+
+    //DATABASE GET STOCK SYMBOLS PROMISE
+    db.getSymbols().then((result) => {
+
+      if(result) {
+        let symbolsStr = result.list.join('+');
+        let requestString = BASE_URL + symbolsStr + URL_FORMATTER;
+
+        request.get(requestString, (error, response, body) => {
+          if(error) reject(error);
+          resolve(body);
+        });
+      }
     });
   });
 }

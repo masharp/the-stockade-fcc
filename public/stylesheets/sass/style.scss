@@ -1,15 +1,15 @@
 $primary-color: white;
-$secondary-color: #1BB248;
-$tertiary-color: gray;
+$secondary-color: #003044;
+$tertiary-color: white;
 
-$font: "";
-$title-font: "";
+$graph-font: "";
+$title-font: 'Amatic SC', cursive;
 
 body, html {
-  font-family: $font;
+  font-family: $title-font;
   background-color: $secondary-color;
   color: $primary-color;
-  font-size: 15px;
+  font-size: 20px;
 }
 
 #top {
@@ -19,21 +19,32 @@ body, html {
   #main-title {
     font-size: 3em;
     font-family: $title-font;
-    margin-bottom: .2em;
+    margin-bottom: 0;
+    margin-top: 0;
   }
   #main-subtitle {
     font-size: 1.2em;
   }
 }
+#loader {
+  width: 100%;
+
+  #main {
+    #line-chart {
+      padding: .5em;
+      border: .05em solid white;
+    }
+  }
+}
 
 /* FOOTER */
 .footer {
-  margin-top: 6em;
+  margin-top: 3em;
   text-align: center;
 }
 a {
   text-decoration: none;
-  color: darken($tertiary-color, 20);
+  color: darken($tertiary-color, 40);
 
   &:hover {
     text-decoration: underline;
