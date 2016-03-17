@@ -16,8 +16,20 @@ describe("HTTP Route GET Testing", function() {
 
     it("returns proper view", function(done) {
       Request.get(BASE_URL, function(error, response, body) {
+        if(error) console.error(error);
         expect(body).toContain("<title>The Stockade | Stock Market Watching</title>");
         console.log("[ROUTE VIEW] PASS");
+        done();
+      });
+    });
+  });
+
+  describe("GET /API", function() {
+    it("returns status code 200", function(done) {
+      Request.get(BASE_URL + "api", function(error, response, body) {
+        if(error) console.error(error);
+        expect(response.statusCode).toBe(200);
+        console.log("[ROUTE API] PASS");
         done();
       });
     });
