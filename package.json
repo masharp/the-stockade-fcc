@@ -20,7 +20,7 @@
     "test": "jasmine JASMINE_CONFIG_PATH=test/jasmine.json"
   },
   "engines": {
-    "node": "~5.0.0",
+    "node": "~5.8.0",
     "npm": "~3.5.3"
   },
   "eslintConfig": {
