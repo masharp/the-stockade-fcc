@@ -27,10 +27,8 @@
       Socket.on('update', this._stocksUpdated.bind(this));
     }
     _stocksUpdated(update) {
-      let parsedData = update.split('\n');
-      console.log(parsedData);
-
-      this.setState({ stockData: parsedData });
+      console.log(update);
+      //this.setState({ stockData: [] });
     }
     handleSymbolSubmit(symbol) {
       Socket.emit('added', symbol);

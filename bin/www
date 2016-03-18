@@ -19,9 +19,10 @@ app.set('port', port);
 const server = http.createServer(app);
 const io = require('socket.io')(server);
 
-/* Yahoo Finance Webservice */
-const BASE_URL = 'http://finance.yahoo.com/d/quotes.csv?s=';
-const URL_FORMATTER = '&f=sbjk'; // return [0] = current price, [1] = 52 week low, [2] = 52 week high
+/* Quandl Finance API - Combine these two, with the stock symbol in the middle */
+const BASE_URL = 'https://www.quandl.com/api/v3/datasets/WIKI/';
+const URL_FORMATTER = '/data.json?collapse=weekly&start_date=2015-01-01&end_date=2016-03-01&' +
+    'column_index=4&order=asc&api_key=' +  process.env.QUANDL_API;
 
 /* Listen on provided port, on all network interfaces. */
 server.listen(port);
@@ -39,10 +40,11 @@ io.on('connection', function(socket) {
 
   /* listen for updates to the tracked Symbols */
   socket.on('added', function(symbol) {
-
     db.updateSymbols('ADD', symbol).then((result) => {
       if(result === 'Success') {
         //io.emit
+      } else if (result === 'Limit Reached') {
+
       }
     });
   });
@@ -71,13 +73,22 @@ function fetchStockData() {
     db.getSymbols().then((result) => {
 
       if(result) {
-        let symbolsStr = result.list.join('+');
-        let requestString = BASE_URL + symbolsStr + URL_FORMATTER;
+        let stockData = [];
+        let finished = 0;
 
-        request.get(requestString, (error, response, body) => {
-          if(error) reject(error);
-          resolve(body);
-        });
+        for(let i = 0; i < result.list.length; i++) {
+          let requestString = BASE_URL + result.list[i] + URL_FORMATTER;
+
+          request.get(requestString, (error, response, body) => {
+            if(error) reject(error);
+
+            let stockObj = { symbol: result.list[i], data: JSON.parse(body).dataset_data.data };
+            stockData.push(stockObj);
+
+            console.log(`${result.list[i]} parsed. Finished: ${finished}`);
+            if(++finished === result.list.length) resolve(stockData);
+          });
+        }
       }
     });
   });

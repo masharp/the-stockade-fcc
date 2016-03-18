@@ -29,6 +29,7 @@
     }
   },
   "dependencies": {
+    "async": "^1.5.2",
     "body-parser": "~1.13.2",
     "browserify": "^13.0.0",
     "compression": "latest",
