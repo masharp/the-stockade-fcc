@@ -33,28 +33,35 @@ server.on('listening', onListening);
 io.on('connection', function(socket) {
   console.log('USER CONNECTED');
 
-  fetchStockData().then((response) => {
-    io.emit('update', response);
-  });
+  fetchStockSymbols().then((symbols) => {
+    console.log(symbols);
+    let responseObj = { valid: [], data: [] };
 
+    fetchStockData().then((stocks) => {
+      responseObj.data = stocks;
+
+      socket.emit('initiate', responseObj);
+    });
+  });
 
   /* listen for updates to the tracked Symbols */
   socket.on('added', function(symbol) {
     db.updateSymbols('ADD', symbol).then((result) => {
       if(result === 'Success') {
-        //io.emit
-      } else if (result === 'Limit Reached') {
-
+        fetchStockData().then((response) => {
+          io.emit('update', response);
+        });
       }
     });
   });
 
   /*lsiten for remova l of a tracked symbol */
   socket.on('removed', function(symbol) {
-
     db.updateSymbols('REMOVE', symbol).then((result) => {
       if(result === 'Success') {
-        //io.emit
+        fetchStockData().then((response) => {
+          io.emit('update', response);
+        });
       }
     });
   });
@@ -64,6 +71,18 @@ io.on('connection', function(socket) {
     console.log('USER DISCONNECTED');
   });
 });
+
+function fetchStockSymbols() {
+    let url = 'https://www.quandl.com/api/v3/databases/WIKI?api_key=' + process.env.QUANDL_API;
+
+    return new Promise( (resolve, reject) => {
+      request.get(url, (error, response, body) => {
+        if(error) reject(error);
+        resolve(body);
+      });
+    });
+
+}
 
 function fetchStockData() {
   //STOCK DATA PROMISE

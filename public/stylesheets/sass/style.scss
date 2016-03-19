@@ -30,10 +30,17 @@ body, html {
 #loader {
   width: 100%;
 
+  #error {
+    background-color: white;
+    color: red;
+    text-align: center;
+    padding: .5em;
+  }
   #main {
     #line-chart {
       font-size: .8em;
       padding: 2.3em;
+      margin: .5em;
       border: .05em solid white;
     }
   }

@@ -22,36 +22,32 @@
   class Controller extends React.Component {
     constructor(props) {
       super(props);
-      this.state = { stockData: [] };
+      this.state = { stockData: [], stockSymbols: [] , validSymbols: [] };
     }
     componentDidMount() {
-      Socket.on('update', this._stocksUpdated.bind(this));
+      Socket.on('initiate', this.handleStockInitiate.bind(this));
+      Socket.on('update', this.handleStockUpdate.bind(this));
     }
-    componentDidUpdate() {
-      this._addGraphHover();
+    handleStockInitiate(initial) {
+      if(this.state.stockSymbols.length === 0) this.setState({ stockSymbols: initial.data.map((d) => { return d.name; })});
+      if(this.state.stockData.length === 0) this.setState({ stockData: initial.data });
     }
-    _addGraphHover() {
-      let chart = document.getElementById('chart');
-      let circles = document.getElementsByClassName('rd3-linechart-circle');
-      let circleElements = [].slice.call(circles);
-
-      circleElements.forEach((c) => {
-        c.addEventListener('mouseover', (e) => {
-          console.log(e);
-        });
-      });
+    handleStockUpdate(update) {
+      this.setState({ stockSymbols: update.map((d) => {return d.name; }), stockData: update });
     }
-    _stocksUpdated(update) {
-      console.log(update);
-      this.setState({ stockData: update });
-    }
-    _formatX(d) {
+    formatX(d) {
       let formatter = D3Time.format('%Y-%m-%d').parse;
       if(typeof d.x === 'string') return formatter(d.x);
       else return d.x;
     }
     handleSymbolSubmit(symbol) {
-      Socket.emit('added', symbol);
+      if(Validator(symbol)) {
+        Socket.emit('added', symbol);
+      } else {
+        let errorElement = document.getElementById('error');
+        errorElement.classList.innerHTML('NOT A VALID STOCK SYMBOL.');
+        errorElement.classList.remove('hidden');
+      }
     }
     handleSymbolRemove(symbol) {
       Socket.emit('removed', symbol);
@@ -59,6 +55,7 @@
     render() {
       return (
         React.createElement('div', { id: 'main' },
+          React.createElement('div', { id: 'error', className: 'hidden' }),
           React.createElement('div', { id: 'line-chart' },
           /* React-D3 Line Chart, formatted */
             React.createElement(HighChart, { config: this.props.config })
