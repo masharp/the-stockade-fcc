@@ -71368,29 +71368,26 @@ module.exports = yeast;
   const React = require('react');
   const Request = require('request');
   const LineChart = require('react-d3').LineChart;
+  const D3Time = require('d3').time;
   const Socket = require('socket.io-client')();
-  var lineData = [{
-    name: "series1",
-    values: [{ x: 0, y: 20 }, { x: 24, y: 10 }],
-    strokeWidth: 3
-  }, {
-    name: "series2",
-    strokeWidth: 3,
-    values: [{ x: 200, y: 82 }, { x: 302, y: 82 }]
-  }];
+  const userDimensions = {
+    width: window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth,
+    height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
+  };
+
   /* ------------------------ React Components -------------------------- */
   /* central controller for the app - contains main UI and user input elements */
   class Controller extends React.Component {
     constructor(props) {
       super(props);
-      this.state = { stockData: [], tempData: lineData };
+      this.state = { stockData: [] };
     }
     componentDidMount() {
       Socket.on('update', this._stocksUpdated.bind(this));
     }
     _stocksUpdated(update) {
       console.log(update);
-      //this.setState({ stockData: [] });
+      this.setState({ stockData: update });
     }
     handleSymbolSubmit(symbol) {
       Socket.emit('added', symbol);
@@ -71399,8 +71396,19 @@ module.exports = yeast;
       Socket.emit('removed', symbol);
     }
     render() {
-      return React.createElement('div', { id: 'main' }, React.createElement('div', { id: 'line-chart' }, React.createElement(LineChart, { fill: 'white', title: 'Observed Stock Symbols', width: 1000,
-        data: this.state.tempData })), React.createElement(Stockade, {}));
+      return React.createElement('div', { id: 'main' }, React.createElement('div', { id: 'line-chart' },
+      /* React-D3 Line Chart, formatted */
+      React.createElement(LineChart, { id: 'chrt', title: 'Price Index (since Jan. 2014)', data: this.state.stockData,
+        width: this.props.graphDimensions.width - 75, height: this.props.graphDimensions.height / 1.3,
+        xAccessor: d => {
+          let formatter = D3Time.format('%Y-%m-%d').parse;
+          if (typeof d.x === 'string') return formatter(d.x);else return d.x;
+        },
+        onMouseOver: (component, d, i) => {
+          console.log('Over');
+        },
+        yAxisLabel: 'Price per Share (USD)', xAxisLabel: 'Time (month)', gridVertical: true,
+        legend: true, fill: 'white' })), React.createElement(Stockade, {}));
     }
   }
 
@@ -71415,12 +71423,12 @@ module.exports = yeast;
 
   const Stock = props => React.createElement('div', {}, props.data);
 
-  Controller.propTypes = {};
+  Controller.propTypes = { graphDimensions: React.PropTypes.object.isRequired };
 
-  ReactDOM.render(React.createElement(Controller, {}), document.getElementById('loader'));
+  ReactDOM.render(React.createElement(Controller, { graphDimensions: userDimensions }), document.getElementById('loader'));
 })();
 
-},{"react":320,"react-d3":165,"react-dom":191,"request":326,"socket.io-client":342}],389:[function(require,module,exports){
+},{"d3":22,"react":320,"react-d3":165,"react-dom":191,"request":326,"socket.io-client":342}],389:[function(require,module,exports){
 
 },{}],390:[function(require,module,exports){
 var asn1 = exports;

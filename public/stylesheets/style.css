@@ -1,15 +1,16 @@
 body, html {
-  font-family: "Amatic SC", cursive;
+  font-family: "Montserrat", sans-serif;
   background-color: #003044;
   color: white;
-  font-size: 20px; }
+  font-size: 15px; }
 
 #top {
   width: 100%;
-  text-align: center; }
+  text-align: center;
+  margin-bottom: .5em; }
   #top #main-title {
     font-size: 3em;
-    font-family: "Amatic SC", cursive;
+    font-family: "Montserrat", sans-serif;
     margin-bottom: 0;
     margin-top: 0; }
   #top #main-subtitle {
@@ -18,7 +19,8 @@ body, html {
 #loader {
   width: 100%; }
   #loader #main #line-chart {
-    padding: .5em;
+    font-size: .8em;
+    padding: 2.5em;
     border: .05em solid white; }
 
 /* FOOTER */

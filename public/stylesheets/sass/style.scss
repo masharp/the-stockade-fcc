@@ -3,18 +3,19 @@ $secondary-color: #003044;
 $tertiary-color: white;
 
 $graph-font: "";
-$title-font: 'Amatic SC', cursive;
+$title-font: 'Montserrat', sans-serif;
 
 body, html {
   font-family: $title-font;
   background-color: $secondary-color;
   color: $primary-color;
-  font-size: 20px;
+  font-size: 15px;
 }
 
 #top {
   width: 100%;
   text-align: center;
+  margin-bottom: .5em;
 
   #main-title {
     font-size: 3em;
@@ -31,7 +32,8 @@ body, html {
 
   #main {
     #line-chart {
-      padding: .5em;
+      font-size: .8em;
+      padding: 2.5em;
       border: .05em solid white;
     }
   }

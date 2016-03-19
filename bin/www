@@ -21,7 +21,7 @@ const io = require('socket.io')(server);
 
 /* Quandl Finance API - Combine these two, with the stock symbol in the middle */
 const BASE_URL = 'https://www.quandl.com/api/v3/datasets/WIKI/';
-const URL_FORMATTER = '/data.json?collapse=weekly&start_date=2015-01-01&end_date=2016-03-01&' +
+const URL_FORMATTER = '/data.json?collapse=weekly&start_date=2014-01-01&' +
     'column_index=4&order=asc&api_key=' +  process.env.QUANDL_API;
 
 /* Listen on provided port, on all network interfaces. */
@@ -82,7 +82,18 @@ function fetchStockData() {
           request.get(requestString, (error, response, body) => {
             if(error) reject(error);
 
-            let stockObj = { symbol: result.list[i], data: JSON.parse(body).dataset_data.data };
+            let stockObj = {
+              name: result.list[i],
+              values: [],
+              strokeWidth: 2
+            };
+
+            JSON.parse(body).dataset_data.data.forEach((d) => {
+              let temp = { x: d[0], y: d[1] };
+
+              stockObj.values.push(temp);
+            });
+
             stockData.push(stockObj);
 
             console.log(`${result.list[i]} parsed. Finished: ${finished}`);
