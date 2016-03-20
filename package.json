@@ -14,7 +14,7 @@
   },
   "scripts": {
     "sass": "sass --watch ./public/stylesheets/sass/style.scss:./public/stylesheets/style.css",
-    "scan": "eslint ./public/javascripts/global.js",
+    "scan": "eslint -c package.json ./public/javascripts/global.js db.js app.js ./routes/index.js ./bin/www",
     "bundle": "babel ./public/javascripts/global.js -o ./public/javascripts/compiled.js && browserify ./public/javascripts/compiled.js -o ./public/javascripts/bundle.js",
     "start": "node ./bin/www",
     "test": "jasmine JASMINE_CONFIG_PATH=test/jasmine.json"

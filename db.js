@@ -35,7 +35,7 @@ module.exports.updateSymbols = function updateSymbols(mode, symbol) {
         if(error) reject(error);
 
         switch(mode) {
-          case "ADD":
+          case 'ADD':
             collection.update( { name: 'master' },
               {
                 $push : { list : symbol }
@@ -43,10 +43,10 @@ module.exports.updateSymbols = function updateSymbols(mode, symbol) {
                 if(error) reject(error);
                 console.log(result);
                 db.close();
-                resolve("Success");
+                resolve('Success');
             });
             break;
-          case "REMOVE":
+          case 'REMOVE':
             collection.update( { name: 'master' },
               {
                 $pull : { list: symbol }
@@ -54,7 +54,7 @@ module.exports.updateSymbols = function updateSymbols(mode, symbol) {
                 if(error) reject(error);
                 console.log(result);
                 db.close();
-                resolve("Success");
+                resolve('Success');
               });
             break;
         }

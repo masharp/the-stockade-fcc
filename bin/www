@@ -30,33 +30,33 @@ server.on('error', onError);
 server.on('listening', onListening);
 
 /* Set up Socket.io WebSocket */
-io.on('connection', function(socket) {
+io.on('connection', (socket) => {
   console.log('USER CONNECTED');
-
-  fetchStockSymbols().then((symbols) => {
-    console.log(symbols);
-    let responseObj = { valid: [], data: [] };
-
-    fetchStockData().then((stocks) => {
-      responseObj.data = stocks;
-
-      socket.emit('initiate', responseObj);
-    });
+  testValidSymbol('SHIT');
+  fetchStockData().then((stocks) => {
+    socket.emit('initiate', stocks);
   });
 
-  /* listen for updates to the tracked Symbols */
-  socket.on('added', function(symbol) {
-    db.updateSymbols('ADD', symbol).then((result) => {
-      if(result === 'Success') {
-        fetchStockData().then((response) => {
-          io.emit('update', response);
-        });
-      }
-    });
+  /* listen for updates to the tracked Symbols
+    TODO: ensure the db does not add duplicates */
+  socket.on('added', (symbol) => {
+    if(testValidSymbol(symbol)) {
+      db.updateSymbols('ADD', symbol).then((result) => {
+        if(result === 'Success') {
+          fetchStockData().then((response) => {
+            io.emit('update', response);
+          });
+        } else if(result === 'Duplicate') {
+          socket.emit('error:add', 'Duplicate Symbol');
+        }
+      });
+    } else {
+      socket.emit('error:add', 'Invalid stock symbol');
+    }
   });
 
   /*lsiten for remova l of a tracked symbol */
-  socket.on('removed', function(symbol) {
+  socket.on('removed', (symbol) => {
     db.updateSymbols('REMOVE', symbol).then((result) => {
       if(result === 'Success') {
         fetchStockData().then((response) => {
@@ -67,20 +67,29 @@ io.on('connection', function(socket) {
   });
 
   /* Listen for User Disconnect */
-  socket.on('disconnect', function() {
+  socket.on('disconnect', () => {
     console.log('USER DISCONNECTED');
   });
 });
 
-function fetchStockSymbols() {
-    let url = 'https://www.quandl.com/api/v3/databases/WIKI?api_key=' + process.env.QUANDL_API;
+/* Mve the test to the socket to avoid callbacks */
+function testValidSymbol(symbol) {
+  let requestString = BASE_URL + symbol + URL_FORMATTER;
 
-    return new Promise( (resolve, reject) => {
-      request.get(url, (error, response, body) => {
-        if(error) reject(error);
-        resolve(body);
-      });
+  let testPromise = new Promise((resolve, reject) => {
+    request.get(requestString, (error, response, body) => {
+      if(error) reject(error);
+
+      body = JSON.parse(body);
+      if(body.quandl_error) resolve(false);
+      else resolve(true);
     });
+
+  testPromise.then((result) => {
+    return
+  })
+  });
+
 
 }
 
@@ -167,7 +176,3 @@ function onListening() {
   var bind = typeof addr === 'string' ? ('pipe ' + addr) : ('port ' + addr.port);
   debug('Listening on ' + bind);
 }
-
-exports.closeServer = function() {
-  server.close();
-};
