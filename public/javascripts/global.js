@@ -14,7 +14,34 @@
   };
 
   const highChartConfig = {
-
+    rangeSelector: {
+      selected: 4
+    },
+    title: 'Selected Stocks',
+    yAxis: {
+      labels: {
+        formatter: () => { return (this.value > 0 ? ' + ' : '') + this.value + '%'; }
+      },
+      title: {
+        text: 'Time'
+      },
+      plotLines: [{ value: 0, width: 2, color: 'silver' }]
+    },
+    yAxis: {
+      title: {
+        text: 'Price per Share (USD)'
+      }
+    },
+    plotOptions: {
+      series: {
+        compare: 'percent'
+      }
+    },
+    tooltip: {
+      pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.change} %)</br>',
+      valueDecimals: 2
+    },
+    series: []
   };
 
   /* ------------------------ React Components -------------------------- */
@@ -22,7 +49,7 @@
   class Controller extends React.Component {
     constructor(props) {
       super(props);
-      this.state = { stockData: [], stockSymbols: [] };
+      this.state = { stockData: [], stockSymbols: [], chartConfig: this.props.config };
     }
     componentDidMount() {
       Socket.on('initiate', this.handleStockInitiate.bind(this));
@@ -31,8 +58,12 @@
       Socket.on('error:remove', this.handleErrorRemove.bind(this));
     }
     handleStockInitiate(initial) {
-      if(this.state.stockSymbols.length === 0) this.setState({ stockSymbols: initial.data.map((d) => { return d.name; })});
-      if(this.state.stockData.length === 0) this.setState({ stockData: initial.data });
+      if(this.state.stockSymbols.length === 0) this.setState({ stockSymbols: initial.map((d) => { return d.name; })});
+      if(this.state.stockData.length === 0) this.setState({ stockData: initial });
+
+      let newConfig = this.state.chartConfig;
+      newConfig.series =  initial;
+      this.setState({ chartConfig: newConfig });
     }
     handleStockUpdate(update) {
       this.setState({ stockSymbols: update.map((d) => {return d.name; }), stockData: update });

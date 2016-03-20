@@ -58511,42 +58511,75 @@ module.exports = yeast;
     height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
   };
 
-  const highChartConfig = {};
+  const highChartConfig = {
+    rangeSelector: {
+      selected: 4
+    },
+    title: 'Selected Stocks',
+    yAxis: {
+      labels: {
+        formatter: () => {
+          return (this.value > 0 ? ' + ' : '') + this.value + '%';
+        }
+      },
+      plotLines: [{ value: 0, width: 2, color: 'silver' }]
+    },
+    plotOptions: {
+      series: {
+        compare: 'percent'
+      }
+    },
+    tooltip: {
+      pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.change} %)</br>',
+      valueDecimals: 2
+    },
+    series: []
+  };
 
   /* ------------------------ React Components -------------------------- */
   /* central controller for the app - contains main UI and user input elements */
   class Controller extends React.Component {
     constructor(props) {
       super(props);
-      this.state = { stockData: [], stockSymbols: [], validSymbols: [] };
+      this.state = { stockData: [], stockSymbols: [], chartConfig: this.props.config };
     }
     componentDidMount() {
       Socket.on('initiate', this.handleStockInitiate.bind(this));
       Socket.on('update', this.handleStockUpdate.bind(this));
+      Socket.on('error:add', this.handleErrorAdd.bind(this));
+      Socket.on('error:remove', this.handleErrorRemove.bind(this));
     }
     handleStockInitiate(initial) {
-      if (this.state.stockSymbols.length === 0) this.setState({ stockSymbols: initial.data.map(d => {
+      if (this.state.stockSymbols.length === 0) this.setState({ stockSymbols: initial.map(d => {
           return d.name;
         }) });
-      if (this.state.stockData.length === 0) this.setState({ stockData: initial.data });
+      if (this.state.stockData.length === 0) this.setState({ stockData: initial });
+
+      let newConfig = this.state.chartConfig;
+      newConfig.series = initial;
+      this.setState({ chartConfig: newConfig });
     }
     handleStockUpdate(update) {
       this.setState({ stockSymbols: update.map(d => {
           return d.name;
         }), stockData: update });
     }
+    handleErrorAdd(error) {
+      let errorElement = document.getElementById('error');
+      errorElement.classList.innerHTML(error);
+      errorElement.classList.remove('hidden');
+    }
+    handleErrorRemove(error) {
+      let errorElement = document.getElementById('error');
+      errorElement.classList.innerHTML(error);
+      errorElement.classList.remove('hidden');
+    }
     formatX(d) {
       let formatter = D3Time.format('%Y-%m-%d').parse;
       if (typeof d.x === 'string') return formatter(d.x);else return d.x;
     }
     handleSymbolSubmit(symbol) {
-      if (Validator(symbol)) {
-        Socket.emit('added', symbol);
-      } else {
-        let errorElement = document.getElementById('error');
-        errorElement.classList.innerHTML('NOT A VALID STOCK SYMBOL.');
-        errorElement.classList.remove('hidden');
-      }
+      Socket.emit('added', symbol);
     }
     handleSymbolRemove(symbol) {
       Socket.emit('removed', symbol);

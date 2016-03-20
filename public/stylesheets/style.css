@@ -26,8 +26,7 @@ body, html {
   #loader #main #line-chart {
     font-size: .8em;
     padding: 2.3em;
-    margin: .5em;
-    border: .05em solid white; }
+    margin: .5em; }
 
 /* FOOTER */
 .footer {

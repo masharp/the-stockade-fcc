@@ -110,14 +110,13 @@ function fetchStockData() {
 
             let stockObj = {
               name: result.list[i],
-              values: [],
-              strokeWidth: 2
+              data: []
             };
 
             JSON.parse(body).dataset_data.data.forEach((d) => {
-              let temp = { x: d[0], y: d[1] };
+              let temp = [ Date.parse(d[0]), d[1] ];
 
-              stockObj.values.push(temp);
+              stockObj.data.push(temp);
             });
 
             stockData.push(stockObj);
