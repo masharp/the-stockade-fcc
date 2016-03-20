@@ -36,14 +36,22 @@ module.exports.updateSymbols = function updateSymbols(mode, symbol) {
 
         switch(mode) {
           case 'ADD':
-            collection.update( { name: 'master' },
-              {
-                $push : { list : symbol }
-              }, (error, result) => {
-                if(error) reject(error);
-                console.log(result);
-                db.close();
-                resolve('Success');
+            collection.findOne({ name: 'master' }, (error, item) => {
+              if(error) reject(error);
+
+              if(item.list.includes(symbol)) {
+                resolve('Duplicate');
+              } else {
+                collection.update( { name: 'master' },
+                  {
+                    $push : { list : symbol }
+                  }, (error, result) => {
+                    if(error) reject(error);
+
+                    db.close();
+                    resolve('Success');
+                });
+              }
             });
             break;
           case 'REMOVE':
@@ -52,7 +60,7 @@ module.exports.updateSymbols = function updateSymbols(mode, symbol) {
                 $pull : { list: symbol }
               }, (error, result) => {
                 if(error) reject(error);
-                console.log(result);
+
                 db.close();
                 resolve('Success');
               });

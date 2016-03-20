@@ -22,11 +22,13 @@
   class Controller extends React.Component {
     constructor(props) {
       super(props);
-      this.state = { stockData: [], stockSymbols: [] , validSymbols: [] };
+      this.state = { stockData: [], stockSymbols: [] };
     }
     componentDidMount() {
       Socket.on('initiate', this.handleStockInitiate.bind(this));
       Socket.on('update', this.handleStockUpdate.bind(this));
+      Socket.on('error:add', this.handleErrorAdd.bind(this));
+      Socket.on('error:remove', this.handleErrorRemove.bind(this));
     }
     handleStockInitiate(initial) {
       if(this.state.stockSymbols.length === 0) this.setState({ stockSymbols: initial.data.map((d) => { return d.name; })});
@@ -35,19 +37,23 @@
     handleStockUpdate(update) {
       this.setState({ stockSymbols: update.map((d) => {return d.name; }), stockData: update });
     }
+    handleErrorAdd(error) {
+      let errorElement = document.getElementById('error');
+      errorElement.classList.innerHTML(error);
+      errorElement.classList.remove('hidden');
+    }
+    handleErrorRemove(error) {
+      let errorElement = document.getElementById('error');
+      errorElement.classList.innerHTML(error);
+      errorElement.classList.remove('hidden');
+    }
     formatX(d) {
       let formatter = D3Time.format('%Y-%m-%d').parse;
       if(typeof d.x === 'string') return formatter(d.x);
       else return d.x;
     }
     handleSymbolSubmit(symbol) {
-      if(Validator(symbol)) {
-        Socket.emit('added', symbol);
-      } else {
-        let errorElement = document.getElementById('error');
-        errorElement.classList.innerHTML('NOT A VALID STOCK SYMBOL.');
-        errorElement.classList.remove('hidden');
-      }
+      Socket.emit('added', symbol);
     }
     handleSymbolRemove(symbol) {
       Socket.emit('removed', symbol);

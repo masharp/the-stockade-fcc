@@ -40,22 +40,24 @@ io.on('connection', (socket) => {
   /* listen for updates to the tracked Symbols
     TODO: ensure the db does not add duplicates */
   socket.on('added', (symbol) => {
-    if(testValidSymbol(symbol)) {
-      db.updateSymbols('ADD', symbol).then((result) => {
-        if(result === 'Success') {
-          fetchStockData().then((response) => {
-            io.emit('update', response);
-          });
-        } else if(result === 'Duplicate') {
-          socket.emit('error:add', 'Duplicate Symbol');
-        }
-      });
-    } else {
-      socket.emit('error:add', 'Invalid stock symbol');
-    }
+    testValidSymbol(symbol).then((result) => {
+      if(result) {
+        db.updateSymbols('ADD', symbol).then((result) => {
+          if(result === 'Success') {
+            fetchStockData().then((response) => {
+              io.emit('update', response);
+            });
+          } else if(result === 'Duplicate') {
+            socket.emit('error:add', 'Duplicate Symbol');
+          }
+        });
+      } else {
+        socket.emit('error:add', 'Invalid stock symbol');
+      }
+    });
   });
 
-  /*lsiten for remova l of a tracked symbol */
+  /*lsiten for removal of a tracked symbol */
   socket.on('removed', (symbol) => {
     db.updateSymbols('REMOVE', symbol).then((result) => {
       if(result === 'Success') {
@@ -72,11 +74,12 @@ io.on('connection', (socket) => {
   });
 });
 
-/* Mve the test to the socket to avoid callbacks */
+/* Move the test to the socket to avoid callbacks
+  OR move a quick validation to the front end */
 function testValidSymbol(symbol) {
   let requestString = BASE_URL + symbol + URL_FORMATTER;
 
-  let testPromise = new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     request.get(requestString, (error, response, body) => {
       if(error) reject(error);
 
@@ -85,12 +88,7 @@ function testValidSymbol(symbol) {
       else resolve(true);
     });
 
-  testPromise.then((result) => {
-    return
-  })
   });
-
-
 }
 
 function fetchStockData() {
