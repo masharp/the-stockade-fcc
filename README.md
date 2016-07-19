@@ -1,21 +1,29 @@
 #The Stockade
   * This is a full-stack web application that tracks the trends of stocks by symbol.
     Displays the trend lines over a selectable time. Stock symbols can be added and removed.
-    Symbols sync over all clients in real-time.
+    Symbols sync over all clients in real-time.  
 
-    Powered by Node.js, React.js, D3, and WebSockets. Part of the FreeCodeCamp curriculum.
-    A working prototype of this application can be found [here](http://the-stockade.herokuapp.com)
+    Powered by Node.js, React.js, Highcharts, and WebSockets. Part of the FreeCodeCamp curriculum.
+    A working prototype of this application can be found [here](http://the-stockade.herokuapp.com)  
 
-    User Stories:
+    The stock market data used in this app is provided by Markit On Demand Market Data API (v2)
+    and can be found at http://dev.markitondemand.com/MODApis/  
+
+    User Stories:  
       * User Story: I can view a graph displaying the recent trend lines for each added stock.
       * User Story: I can add new stocks by their symbol name.
       * User Story: I can remove stocks.
-      * User Story: I can see changes in real-time when any other user adds or removes a stock.
+      * User Story: I can see changes in real-time when any other user adds or removes a stock.  
 
     www.softwareontheshore.com
     Michael Sharp 2016
+    michael@softwareontheshore.com
 
-## Change Log
+#Change Log
 
-### Mar. 14, 2016
+## Mar. 14, 2016
   * Initial Commit
+
+## July 18, 2016
+  * Dusted off project
+  * Refactored for webpack
