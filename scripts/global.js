@@ -49,14 +49,23 @@ class Main extends React.Component {
   constructor(props) {
     super(props);
     this.state = { stockData: [], stockSymbols: [], chartConfig: this.props.config };
+
+    this._initiate = this._initiate.bind(this);
+    this._update =  this._update.bind(this);
+    this._errorAdd = this._errorAdd.bind(this);
+    this._errorRemove = this._errorRemove.bind(this);
+    this._submit = this._submit.bind(this);
+    this._remove = this._remove.bind(this);
   }
   componentDidMount() {
-    Socket.on('initiate', this.handleStockInitiate.bind(this));
-    Socket.on('update', this.handleStockUpdate.bind(this));
-    Socket.on('error:add', this.handleErrorAdd.bind(this));
-    Socket.on('error:remove', this.handleErrorRemove.bind(this));
+    Socket.on('initiate', this._initiate);
+    Socket.on('update', this._update);
+    Socket.on('submit', this._submit);
+    Socket.on('remove', this._remove);
+    Socket.on('error:add', this._errorAdd);
+    Socket.on('error:remove', this._errorRemove);
   }
-  handleStockInitiate(initial) {
+  _initiate(initial) {
     if (this.state.stockSymbols.length === 0) this.setState({ stockSymbols: initial.map((d) => { return d.name; })});
     if (this.state.stockData.length === 0) this.setState({ stockData: initial });
 
@@ -64,29 +73,29 @@ class Main extends React.Component {
     newConfig.series =  initial;
     this.setState({ chartConfig: newConfig });
   }
-  handleStockUpdate(update) {
+  _update(update) {
     this.setState({ stockSymbols: update.map((d) => {return d.name; }), stockData: update });
   }
-  handleErrorAdd(error) {
+  _errorAdd(error) {
     let errorElement = document.getElementById('error');
     errorElement.classList.innerHTML(error);
     errorElement.classList.remove('hidden');
   }
-  handleErrorRemove(error) {
+  _errorRemove(error) {
     let errorElement = document.getElementById('error');
     errorElement.classList.innerHTML(error);
     errorElement.classList.remove('hidden');
+  }
+  _submit(symbol) {
+    Socket.emit('added', symbol);
+  }
+  _remove(symbol) {
+    Socket.emit('removed', symbol);
   }
   formatX(d) {
     let formatter = D3Time.format('%Y-%m-%d').parse;
     if (typeof d.x === 'string') return formatter(d.x);
     else return d.x;
-  }
-  handleSymbolSubmit(symbol) {
-    Socket.emit('added', symbol);
-  }
-  handleSymbolRemove(symbol) {
-    Socket.emit('removed', symbol);
   }
   render() {
     return (
@@ -117,7 +126,7 @@ class Stockade extends React.Component {
 
 const Stock = (props) => React.createElement('div', {}, props.data);
 
-Controller.propTypes = {
+Main.propTypes = {
   graphDimensions: React.PropTypes.object.isRequired,
   config: React.PropTypes.object.isRequired
  }

@@ -70,3 +70,43 @@ module.exports.updateSymbols = function updateSymbols(mode, symbol) {
     })
   });
 }
+
+
+function fetchStockData() {
+  //STOCK DATA PROMISE
+  return new Promise( (resolve, reject) => {
+
+    //DATABASE GET STOCK SYMBOLS PROMISE
+    db.getSymbols().then((result) => {
+
+      if(result) {
+        let stockData = [];
+        let finished = 0;
+
+        for(let i = 0; i < result.list.length; i++) {
+          let requestString = BASE_URL + result.list[i] + URL_FORMATTER;
+
+          request.get(requestString, (error, response, body) => {
+            if(error) reject(error);
+
+            let stockObj = {
+              name: result.list[i],
+              data: []
+            };
+
+            JSON.parse(body).dataset_data.data.forEach((d) => {
+              let temp = [ Date.parse(d[0]), d[1] ];
+
+              stockObj.data.push(temp);
+            });
+
+            stockData.push(stockObj);
+
+            console.log(`${result.list[i]} parsed. Finished: ${finished}`);
+            if(++finished === result.list.length) resolve(stockData);
+          });
+        }
+      }
+    });
+  });
+}
