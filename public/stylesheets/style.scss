@@ -27,20 +27,47 @@ body, html {
     font-size: 1.2em;
   }
 }
-#loader {
+#main {
   width: 100%;
-
-  #error {
-    background-color: white;
-    color: red;
-    text-align: center;
-    padding: .5em;
-  }
-  #main {
+  #main-component {
     #line-chart {
       font-size: .8em;
       padding: 2.3em;
       margin: .5em;
+    }
+    #error {
+      color: red;
+      text-align: center;
+      padding: .5em;
+    }
+    #stockade {
+      text-align: center;
+
+      .stock-card {
+        display: inline-block;
+        margin: .5em;
+        padding: 1em;
+        border: 1px solid #000;
+        &:hover { box-shadow: 2px 2px 1px #000; }
+
+        .stock-remove {
+          color: red;
+          font-style: normal;
+          float: right;
+          margin-bottom: .5em;
+          &:hover { cursor: pointer; font-weight: bold; }
+        }
+        #new-symbol-input {
+          width: 100px;
+          text-transform: uppercase;
+        }
+        #new-symbol-btn {
+          &:hover { cursor: pointer; }
+        }
+        .stock-card-symbol, #new-symbol-btn, #new-symbol-input {
+          margin-top: 1em;
+        }
+      }
     }
   }
 }

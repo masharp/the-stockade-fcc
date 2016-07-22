@@ -15,7 +15,7 @@
   "scripts": {
     "dev": "webpack -d --watch",
     "build": "webpack -p --minimize",
-    "sass": "atom ./public/stylesheets/global/style.scss && sass --watch ./public/stylesheets/style.scss:./public/stylesheets/style.css --style compressed",
+    "sass": "atom ./public/stylesheets/style.scss && sass --watch ./public/stylesheets/style.scss:./public/stylesheets/style.css --style compressed",
     "start": "node ./bin/www"
   },
   "engines": {

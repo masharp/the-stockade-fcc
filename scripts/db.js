@@ -32,17 +32,17 @@ module.exports.addSymbolEntry = function addSymbolEntry(url, symbol) {
         if (collectionError) reject(collectionError);
 
         collection.findOne({ name: 'dev' }, (itemError, item) => {
-            if (error) reject(error);
+            if (itemError) reject(itemError);
 
-            if (item.list.includes(symbol)) {
-              resolve('Duplicate');
+            if (item.symbols.includes(symbol)) {
+              resolve('duplicate');
 
             } else {
               collection.update({ name: 'dev' }, { $push: { symbols: symbol } }, (updateError, result) => {
                   if (updateError) reject(updateError);
 
                   db.close();
-                  resolve('Success');
+                  resolve('success');
               });
             }
         });
@@ -51,7 +51,7 @@ module.exports.addSymbolEntry = function addSymbolEntry(url, symbol) {
   });
 }
 
-module.exports.remvoleSymbolEntry = function removeSymbolEntry(url, symbol) {
+module.exports.removeSymbolEntry = function removeSymbolEntry(url, symbol) {
   return new Promise((resolve, reject) => {
 
     MongoClient.connect(url, (mongoError, db) => {
@@ -61,11 +61,10 @@ module.exports.remvoleSymbolEntry = function removeSymbolEntry(url, symbol) {
         if (collectionError) reject(collectionError);
 
         collection.update( { name: 'dev' }, { $pull: { symbols: symbol } }, (updateError, result) => {
-
           if (updateError) reject(updateError);
 
           db.close();
-          resolve('Success');
+          resolve('success');
         });
       });
     });

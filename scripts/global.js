@@ -7,6 +7,10 @@ const Socket = require('socket.io-client')();
 const HighChart = require('react-highcharts');
 const $ = require('jquery').ajax;
 
+import Stockade from './components/Stockade';
+
+const MARKIT_LOOKUP = 'http://dev.markitondemand.com/Api/v2/Lookup';
+
 const userDimensions = {
   width: window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth,
   height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
@@ -57,18 +61,20 @@ class Main extends React.Component {
     this._update =  this._update.bind(this);
     this._errorAdd = this._errorAdd.bind(this);
     this._errorRemove = this._errorRemove.bind(this);
-    this._submit = this._submit.bind(this);
+    this._add = this._add.bind(this);
     this._remove = this._remove.bind(this);
 
     this.fetchStockData = this.fetchStockData.bind(this);
     this.configureChart = this.configureChart.bind(this);
     this.configureData = this.configureData.bind(this);
+
+    this.handleAdd = this.handleAdd.bind(this);
+    this.handleRemove = this.handleRemove.bind(this);
+    this.testValidSymbol = this.testValidSymbol.bind(this);
   }
   componentDidMount() {
     Socket.on('initiate', this._initiate);
     Socket.on('update', this._update);
-    Socket.on('submit', this._submit);
-    Socket.on('remove', this._remove);
     Socket.on('error:add', this._errorAdd);
     Socket.on('error:remove', this._errorRemove);
   }
@@ -77,23 +83,27 @@ class Main extends React.Component {
     this.fetchStockData();
   }
   _update(update) {
-    this.setState({ stockSymbols: update.map((d) => {return d.name; }), stockData: update });
+    const errorElement = document.getElementById('error');
+    errorElement.classList.add('hidden');
+
+    this.setState({ symbols: update.list });
+    this.fetchStockData();
   }
   _errorAdd(error) {
-    let errorElement = document.getElementById('error');
-    errorElement.classList.innerHTML(error);
+    const errorElement = document.getElementById('error');
+    errorElement.innerHTML = error;
     errorElement.classList.remove('hidden');
   }
   _errorRemove(error) {
-    let errorElement = document.getElementById('error');
-    errorElement.classList.innerHTML(error);
+    const errorElement = document.getElementById('error');
+    errorElement.innerHTML = error;
     errorElement.classList.remove('hidden');
   }
-  _submit(symbol) {
-    Socket.emit('added', symbol);
+  _add(symbol) {
+    Socket.emit('add', symbol);
   }
   _remove(symbol) {
-    Socket.emit('removed', symbol);
+    Socket.emit('remove', symbol);
   }
   fetchStockData() {
     const self = this;
@@ -166,16 +176,57 @@ class Main extends React.Component {
 
     this.setState({ config: newConfig });
   }
+  handleAdd(event) {
+    const errorElement = document.getElementById('error');
+    const inputElement = document.getElementById('new-symbol-input');
+    const newSymbol = inputElement.value;
+
+    errorElement.classList.add('hidden');
+    
+    this.testValidSymbol(newSymbol).then((test) => {
+      if (test || test.symbol) this._add(test.symbol || newSymbol);
+      else {
+        const errorElement = document.getElementById('error');
+        errorElement.innerHTML = 'Invalid Stock Symbol';
+        errorElement.classList.remove('hidden');
+      }
+    });
+  }
+  handleRemove(event) {
+    const symbol = event.target.classList[1];
+    this._remove(symbol);
+  }
+  /* Test if an input stock symbol is valid and/or assume probable if close */
+  testValidSymbol(symbol) {
+    return new Promise((resolve, reject) => {
+      const url = `${MARKIT_LOOKUP}/jsonp`;
+
+      $({
+        url,
+        data: { input: symbol },
+        dataType: 'jsonp',
+        success: function(json) {
+          if (!json || json.Message) console.error(json.Message);
+
+          if (json[0].Symbol !== symbol) resolve(false);
+          else resolve(true);
+        },
+        error: function(response, status) {
+          reject({ response, status });
+        }
+      });
+    });
+  }
   render() {
     if (this.state.symbols !== null) {
       return (
-        React.createElement('div', { id: 'main' },
-          React.createElement('div', { id: 'error', className: 'hidden' }),
+        React.createElement('div', { id: 'main-component' },
           React.createElement('div', { id: 'line-chart' },
           /* React-D3 Line Chart, formatted */
             React.createElement(HighChart, { config: this.props.config })
           ),
-          React.createElement(Stockade, { symbols: this.state.symbols })
+          React.createElement('div', { id: 'error', className: 'hidden' }),
+          React.createElement(Stockade, { symbols: this.state.symbols, remove: this.handleRemove, add: this.handleAdd })
         )
       );
     } else {
@@ -184,24 +235,10 @@ class Main extends React.Component {
   }
 }
 
-const Stockade = (props) => {
-  let stockNodes = props.symbols.map((s) => {
-    return (
-      React.createElement(Stock, { symbol: s })
-    )
-  });
-
-  return (
-    React.createElement('div', { id: 'stockade' }, stockNodes)
-  )
-};
-
-const Stock = (props) => React.createElement('span', null, `${props.symbol} `);
-
 Main.propTypes = {
   graphDimensions: React.PropTypes.object.isRequired,
   config: React.PropTypes.object.isRequired
- }
+}
 
 ReactDOM.render(React.createElement(Main, { graphDimensions: userDimensions, config: highChartConfig }),
   document.getElementById('main'));

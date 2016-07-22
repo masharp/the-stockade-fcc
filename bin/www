@@ -32,21 +32,30 @@ io.on('connection', (socket) => {
     socket.emit('initiate', fetched);
   });
 
-  /* listen for updates to the tracked Symbols
-    TODO: ensure the db does not add duplicates */
-  socket.on('added', (symbol) => {
-    console.log('SYMBOL ADDED');
-    utls.addSymbol(symbol);
-    io.emit('update', 'NEW SYMBOL');
-    //socket.emit('error:add', 'Duplicate Symbol');
-    //socket.emit('error:add', 'Invalid Stock Symbol');
+  /* listen for updates to the tracked Symbols */
+  socket.on('add', (symbol) => {
+    console.log('SYMBOL ADDED: ' + symbol);
+    utils.addSymbol(symbol).then((update) => {
+      if (update === 'success') {
+        utils.fetchSymbols().then((fetched) => {
+          io.emit('update', fetched);
+        });
+      } else if (update === 'duplicate') {
+        socket.emit('error:add', 'Duplicate Symbol');
+      }
+    });
   });
 
   /* listen for removal of a tracked symbol */
-  socket.on('removed', (symbol) => {
-    console.log('SYMBOL REMOVED');
-    utils.removeSymbol(symbol);
-    //io.emit('update', response);
+  socket.on('remove', (symbol) => {
+    console.log('SYMBOL REMOVED: ' + symbol);
+    utils.removeSymbol(symbol).then((update) => {
+      if (update === 'success') {
+        utils.fetchSymbols().then((fetched) => {
+          io.emit('update', fetched);
+        });
+      } else socket.emit('error:remove', 'Remove Update Failed');
+    });
   });
 
   /* Listen for User Disconnect */
