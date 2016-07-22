@@ -14,19 +14,22 @@ const userDimensions = {
 
 const highChartConfig = {
   rangeSelector: {
-    selected: 4
+    selected: 1
   },
   title: 'Selected Stocks',
-  yAxis: {
-    labels: {
-      formatter: () => (this.value > 0 ? ' + ' : '') + this.value + '%'
-    },
+  xAxis: {
     title: {
-      text: 'Time'
+      text: 'One Year'
     },
-    plotLines: [{ value: 0, width: 2, color: 'silver' }]
+    crosshair: {
+      color: '#000000'
+    }
   },
   yAxis: {
+    plotLines: [{ value: 0, width: 2, color: 'black' }],
+    labels : {
+      step: 1
+    },
     title: {
       text: 'Price per Share (USD)'
     }
@@ -37,7 +40,7 @@ const highChartConfig = {
     }
   },
   tooltip: {
-    pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.change} %)</br>',
+    pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>${point.y}</b></br>',
     valueDecimals: 2
   },
   series: []
@@ -48,7 +51,7 @@ const highChartConfig = {
 class Main extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { data: [], symbols: [], config: this.props.config, api: null };
+    this.state = { data: null, symbols: null, config: this.props.config, api: null };
 
     this._initiate = this._initiate.bind(this);
     this._update =  this._update.bind(this);
@@ -59,6 +62,7 @@ class Main extends React.Component {
 
     this.fetchStockData = this.fetchStockData.bind(this);
     this.configureChart = this.configureChart.bind(this);
+    this.configureData = this.configureData.bind(this);
   }
   componentDidMount() {
     Socket.on('initiate', this._initiate);
@@ -95,9 +99,9 @@ class Main extends React.Component {
     const self = this;
     const params = {
       Normalized: false,
-      NumberOfDays: 120,
+      NumberOfDays: 360,
       DataPeriod: 'Day',
-      Elements: this.state.symbols.map((s) => { return ({ Symbol: s, Type: 'Price', Params: ['ohlc'] }); })
+      Elements: this.state.symbols.map((s) => { return ({ Symbol: s, Type: 'Price', Params: ['c'] }); })
     };
 
     $({
@@ -108,61 +112,91 @@ class Main extends React.Component {
         if (!json || json.Message) {
           console.error(json.Message);
         }
-        console.log(json);
 
         self.setState({ data: json });
+        self.configureData();
       },
       error: function(response, status) {
         reject({ response, status });
       }
     });
   }
+  configureData() {
+    const data = this.state.data;
+    const configured = [];
+    const datesLen = data.Dates.length;
+    const symbolLen = data.Elements.length;
+
+    for (let x = 0; x < symbolLen; x++) {
+      let element = data.Elements[x];
+      let points = [];
+
+      for (let y = 0; y < datesLen; y++) {
+        const date = data.Dates[y].split('').slice(0, 10).join(''); // format date
+        const dataPoint = element.DataSeries['close'].values[y];
+
+        points.push([date, dataPoint]);
+      }
+
+      configured.push({ element, points });
+    }
+
+    this.setState({ data: configured });
+    this.configureChart();
+  }
   configureChart() {
     const data = this.state.data;
-
     let newConfig = this.state.config;
+
     newConfig.series = data.map((d) => {
-      return {
-        name: d.Elements.Symbol,
-        color: 'purple',
-        data: d.Elements
-      }
+      return ({
+        type: 'line',
+        name: d.element.Symbol,
+        color: function() {
+          return (
+            /* random hex color generator */
+            `#${(Math.floor((Math.random() * 100) + 33).toString(16)) +
+            (Math.floor((Math.random() * 100) + 33).toString(16)) +
+            (Math.floor((Math.random() * 100) + 33).toString(16))}`
+          );
+        }(),
+        data: d.points
+      });
     });
 
-  }
-  formatX(d) {
-    let formatter = D3Time.format('%Y-%m-%d').parse;
-    if (typeof d.x === 'string') return formatter(d.x);
-    else return d.x;
+    this.setState({ config: newConfig });
   }
   render() {
-    return (
-      React.createElement('div', { id: 'main' },
-        React.createElement('div', { id: 'error', className: 'hidden' }),
-        React.createElement('div', { id: 'line-chart' },
-        /* React-D3 Line Chart, formatted */
-          React.createElement(HighChart, { config: this.props.config })
-        ),
-        React.createElement(Stockade, { })
-      )
-    );
+    if (this.state.symbols !== null) {
+      return (
+        React.createElement('div', { id: 'main' },
+          React.createElement('div', { id: 'error', className: 'hidden' }),
+          React.createElement('div', { id: 'line-chart' },
+          /* React-D3 Line Chart, formatted */
+            React.createElement(HighChart, { config: this.props.config })
+          ),
+          React.createElement(Stockade, { symbols: this.state.symbols })
+        )
+      );
+    } else {
+      return (React.createElement('div', null));
+    }
   }
 }
 
-class Stockade extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-  render() {
+const Stockade = (props) => {
+  let stockNodes = props.symbols.map((s) => {
     return (
-      React.createElement('div', { id: 'stockade' },
-        React.createElement(Stock, { data: 'Stock' })
-      )
-    );
-  }
-}
+      React.createElement(Stock, { symbol: s })
+    )
+  });
 
-const Stock = (props) => React.createElement('div', {}, props.data);
+  return (
+    React.createElement('div', { id: 'stockade' }, stockNodes)
+  )
+};
+
+const Stock = (props) => React.createElement('span', null, `${props.symbol} `);
 
 Main.propTypes = {
   graphDimensions: React.PropTypes.object.isRequired,

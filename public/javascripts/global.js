@@ -53,15 +53,11 @@
 	
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	var _highChartConfig;
-	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 	
 	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-	
-	function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 	
 	var ReactDOM = __webpack_require__(/*! react-dom */ 1);
 	var React = __webpack_require__(/*! react */ 156);
@@ -74,34 +70,39 @@
 	  height: window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight
 	};
 	
-	var highChartConfig = (_highChartConfig = {
+	var highChartConfig = {
 	  rangeSelector: {
-	    selected: 4
+	    selected: 1
 	  },
 	  title: 'Selected Stocks',
+	  xAxis: {
+	    title: {
+	      text: 'One Year'
+	    },
+	    crosshair: {
+	      color: '#000000'
+	    }
+	  },
 	  yAxis: {
+	    plotLines: [{ value: 0, width: 2, color: 'black' }],
 	    labels: {
-	      formatter: function formatter() {
-	        return (undefined.value > 0 ? ' + ' : '') + undefined.value + '%';
-	      }
+	      step: 1
 	    },
 	    title: {
-	      text: 'Time'
-	    },
-	    plotLines: [{ value: 0, width: 2, color: 'silver' }]
-	  }
-	}, _defineProperty(_highChartConfig, 'yAxis', {
-	  title: {
-	    text: 'Price per Share (USD)'
-	  }
-	}), _defineProperty(_highChartConfig, 'plotOptions', {
-	  series: {
-	    compare: 'percent'
-	  }
-	}), _defineProperty(_highChartConfig, 'tooltip', {
-	  pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.change} %)</br>',
-	  valueDecimals: 2
-	}), _defineProperty(_highChartConfig, 'series', []), _highChartConfig);
+	      text: 'Price per Share (USD)'
+	    }
+	  },
+	  plotOptions: {
+	    series: {
+	      compare: 'percent'
+	    }
+	  },
+	  tooltip: {
+	    pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>${point.y}</b></br>',
+	    valueDecimals: 2
+	  },
+	  series: []
+	};
 	
 	/* ------------------------ React Components -------------------------- */
 	/* central controller for the app - contains main UI and user input elements */
@@ -114,7 +115,7 @@
 	
 	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Main).call(this, props));
 	
-	    _this.state = { data: [], symbols: [], config: _this.props.config, api: null };
+	    _this.state = { data: null, symbols: null, config: _this.props.config, api: null };
 	
 	    _this._initiate = _this._initiate.bind(_this);
 	    _this._update = _this._update.bind(_this);
@@ -125,6 +126,7 @@
 	
 	    _this.fetchStockData = _this.fetchStockData.bind(_this);
 	    _this.configureChart = _this.configureChart.bind(_this);
+	    _this.configureData = _this.configureData.bind(_this);
 	    return _this;
 	  }
 	
@@ -181,10 +183,10 @@
 	      var self = this;
 	      var params = {
 	        Normalized: false,
-	        NumberOfDays: 120,
+	        NumberOfDays: 360,
 	        DataPeriod: 'Day',
 	        Elements: this.state.symbols.map(function (s) {
-	          return { Symbol: s, Type: 'Price', Params: ['ohlc'] };
+	          return { Symbol: s, Type: 'Price', Params: ['c'] };
 	        })
 	      };
 	
@@ -196,9 +198,9 @@
 	          if (!json || json.Message) {
 	            console.error(json.Message);
 	          }
-	          console.log(json);
 	
 	          self.setState({ data: json });
+	          self.configureData();
 	        },
 	        error: function error(response, status) {
 	          reject({ response: response, status: status });
@@ -206,58 +208,78 @@
 	      });
 	    }
 	  }, {
+	    key: 'configureData',
+	    value: function configureData() {
+	      var data = this.state.data;
+	      var configured = [];
+	      var datesLen = data.Dates.length;
+	      var symbolLen = data.Elements.length;
+	
+	      for (var x = 0; x < symbolLen; x++) {
+	        var element = data.Elements[x];
+	        var points = [];
+	
+	        for (var y = 0; y < datesLen; y++) {
+	          var date = data.Dates[y].split('').slice(0, 10).join(''); // format date
+	          var dataPoint = element.DataSeries['close'].values[y];
+	
+	          points.push([date, dataPoint]);
+	        }
+	
+	        configured.push({ element: element, points: points });
+	      }
+	
+	      this.setState({ data: configured });
+	      this.configureChart();
+	    }
+	  }, {
 	    key: 'configureChart',
 	    value: function configureChart() {
 	      var data = this.state.data;
-	
 	      var newConfig = this.state.config;
+	
 	      newConfig.series = data.map(function (d) {
 	        return {
-	          name: d.Elements.Symbol,
-	          color: 'purple',
-	          data: d.Elements
+	          type: 'line',
+	          name: d.element.Symbol,
+	          color: function () {
+	            return(
+	              /* random hex color generator */
+	              '#' + (Math.floor(Math.random() * 100 + 33).toString(16) + Math.floor(Math.random() * 100 + 33).toString(16) + Math.floor(Math.random() * 100 + 33).toString(16))
+	            );
+	          }(),
+	          data: d.points
 	        };
 	      });
-	    }
-	  }, {
-	    key: 'formatX',
-	    value: function formatX(d) {
-	      var formatter = D3Time.format('%Y-%m-%d').parse;
-	      if (typeof d.x === 'string') return formatter(d.x);else return d.x;
+	
+	      this.setState({ config: newConfig });
 	    }
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      return React.createElement('div', { id: 'main' }, React.createElement('div', { id: 'error', className: 'hidden' }), React.createElement('div', { id: 'line-chart' },
-	      /* React-D3 Line Chart, formatted */
-	      React.createElement(HighChart, { config: this.props.config })), React.createElement(Stockade, {}));
+	      if (this.state.symbols !== null) {
+	        return React.createElement('div', { id: 'main' }, React.createElement('div', { id: 'error', className: 'hidden' }), React.createElement('div', { id: 'line-chart' },
+	        /* React-D3 Line Chart, formatted */
+	        React.createElement(HighChart, { config: this.props.config })), React.createElement(Stockade, { symbols: this.state.symbols }));
+	      } else {
+	        return React.createElement('div', null);
+	      }
 	    }
 	  }]);
 	
 	  return Main;
 	}(React.Component);
 	
-	var Stockade = function (_React$Component2) {
-	  _inherits(Stockade, _React$Component2);
+	var Stockade = function Stockade(props) {
+	  var stockNodes = props.symbols.map(function (s) {
+	    return React.createElement(Stock, { symbol: s });
+	  });
 	
-	  function Stockade(props) {
-	    _classCallCheck(this, Stockade);
-	
-	    return _possibleConstructorReturn(this, Object.getPrototypeOf(Stockade).call(this, props));
-	  }
-	
-	  _createClass(Stockade, [{
-	    key: 'render',
-	    value: function render() {
-	      return React.createElement('div', { id: 'stockade' }, React.createElement(Stock, { data: 'Stock' }));
-	    }
-	  }]);
-	
-	  return Stockade;
-	}(React.Component);
+	  return React.createElement('div', { id: 'stockade' }, stockNodes);
+	};
 	
 	var Stock = function Stock(props) {
-	  return React.createElement('div', {}, props.data);
+	  return React.createElement('span', null, props.symbol + ' ');
 	};
 	
 	Main.propTypes = {
