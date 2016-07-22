@@ -42,6 +42,8 @@ io.on('connection', (socket) => {
         });
       } else if (update === 'duplicate') {
         socket.emit('error:add', 'Duplicate Symbol');
+      } else if (update === 'maximum') {
+        socket.emit('error:add', 'Maxmium tracked stocks reached. Please remove one to continue.');
       }
     });
   });

@@ -21,15 +21,11 @@ module.exports = {
       {
         test: /\.json$/,
         loader: 'json'
-      },
-      {
-        test: /\.css$/,
-        loader: 'style!css'
       }
     ]
   },
   resolve: {
-    extensions: ['', '.js', '.json', '.css']
+    extensions: ['', '.js', '.json']
   },
   plugins: [
     new webpack.DefinePlugin({

@@ -38,15 +38,16 @@ body, html {
     #error {
       color: red;
       text-align: center;
-      padding: .5em;
+      padding: 1em;
     }
     #stockade {
       text-align: center;
 
       .stock-card {
         display: inline-block;
-        margin: .5em;
-        padding: 1em;
+        margin: 1em;
+        width: 10em;
+        padding: 1em 2em 1em 2em;
         border: 1px solid #000;
         &:hover { box-shadow: 2px 2px 1px #000; }
 
@@ -54,14 +55,21 @@ body, html {
           color: red;
           font-style: normal;
           float: right;
-          margin-bottom: .5em;
+          margin-bottom: 1em;
           &:hover { cursor: pointer; font-weight: bold; }
         }
         #new-symbol-input {
-          width: 100px;
+          width: 8em;
+          font-size: 1.1em;
           text-transform: uppercase;
         }
         #new-symbol-btn {
+          border: none;
+          background-color: white;
+          font-size: 1.1em;
+          padding: .5em 1.1em .5em 1em;
+          font-weight: bold;
+          color: $secondary-color;
           &:hover { cursor: pointer; }
         }
         .stock-card-symbol, #new-symbol-btn, #new-symbol-input {

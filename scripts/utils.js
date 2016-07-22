@@ -21,8 +21,7 @@ module.exports.fetchSymbols = function fetchSymbols() {
 module.exports.addSymbol = function addSymbol(symbol) {
   return new Promise((resolve, reject) => {
     db.addSymbolEntry(MONGO_URL, symbol).then((update) => {
-      if (update === 'success') resolve(true);
-      else if (update === 'duplicate') resolve('Duplicate Symbol');
+      resolve(update);
     });
   });
 }

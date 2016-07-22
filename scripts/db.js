@@ -34,10 +34,15 @@ module.exports.addSymbolEntry = function addSymbolEntry(url, symbol) {
         collection.findOne({ name: 'dev' }, (itemError, item) => {
             if (itemError) reject(itemError);
 
-            if (item.symbols.includes(symbol)) {
+            /* check if symbol already exisits or # of symbols === 6 (max for API) */
+            if (item.symbols.indexOf(symbol) >= 0) {
+              db.close();
               resolve('duplicate');
-
-            } else {
+            } else if (item.symbols.length === 6) {
+              db.close();
+              resolve('maximum');
+            }
+            else {
               collection.update({ name: 'dev' }, { $push: { symbols: symbol } }, (updateError, result) => {
                   if (updateError) reject(updateError);
 

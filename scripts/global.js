@@ -181,8 +181,9 @@ class Main extends React.Component {
     const inputElement = document.getElementById('new-symbol-input');
     const newSymbol = inputElement.value;
 
+    inputElement.value = '';
     errorElement.classList.add('hidden');
-    
+
     this.testValidSymbol(newSymbol).then((test) => {
       if (test || test.symbol) this._add(test.symbol || newSymbol);
       else {
@@ -190,7 +191,7 @@ class Main extends React.Component {
         errorElement.innerHTML = 'Invalid Stock Symbol';
         errorElement.classList.remove('hidden');
       }
-    });
+    }).catch((testError) => console.error(testError));
   }
   handleRemove(event) {
     const symbol = event.target.classList[1];
@@ -206,9 +207,10 @@ class Main extends React.Component {
         data: { input: symbol },
         dataType: 'jsonp',
         success: function(json) {
-          if (!json || json.Message) console.error(json.Message);
-
-          if (json[0].Symbol !== symbol) resolve(false);
+          if (!json || json.Message || !json.length > 0) {
+            resolve(false);
+            console.error(json.Message);
+          } else if (json[0].Symbol !== symbol) resolve(false);
           else resolve(true);
         },
         error: function(response, status) {

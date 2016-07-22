@@ -1,7 +1,8 @@
 #The Stockade
   * This is a full-stack web application that tracks the trends of stocks by symbol.
     Displays the trend lines over a selectable time. Stock symbols can be added and removed.
-    Symbols sync over all clients in real-time.  
+    Symbols sync over all clients in real-time. The application is currently limited to a maximum
+    of 6 tracked stock symbols due to API constraints.  
 
     Powered by Node.js, React.js, Highcharts, and WebSockets. Part of the FreeCodeCamp curriculum.
     A working prototype of this application can be found [here](http://the-stockade.herokuapp.com)  
@@ -27,3 +28,8 @@
 ## July 18, 2016
   * Dusted off project
   * Refactored for webpack
+
+## July 22. 2016
+  * Finished all functionality
+  * Finished desktop styling
+  * Deployed to Heroku
