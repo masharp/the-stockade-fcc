@@ -9,7 +9,7 @@ const $ = require('jquery').ajax;
 
 import Stockade from './components/Stockade';
 
-const MARKIT_LOOKUP = 'http://dev.markitondemand.com/Api/v2/Lookup';
+const MARKIT_LOOKUP = 'https://crossorigin.me/http://dev.markitondemand.com/Api/v2/Lookup';
 
 const userDimensions = {
   width: window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth,
