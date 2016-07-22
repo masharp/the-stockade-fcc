@@ -27,15 +27,17 @@ server.on('listening', onListening);
 /* Set up Socket.io WebSocket */
 io.on('connection', (socket) => {
   console.log('USER CONNECTED');
-  utils.fetchStockData(MONGO_URL);
+
+  utils.fetchSymbols().then((fetched) => {
+    socket.emit('initiate', fetched);
+  });
 
   /* listen for updates to the tracked Symbols
     TODO: ensure the db does not add duplicates */
   socket.on('added', (symbol) => {
     console.log('SYMBOL ADDED');
-    utls.testValidSymbol();
+    utls.addSymbol(symbol);
     io.emit('update', 'NEW SYMBOL');
-    //utils.updateSymbols('ADD', symbol);
     //socket.emit('error:add', 'Duplicate Symbol');
     //socket.emit('error:add', 'Invalid Stock Symbol');
   });
@@ -43,7 +45,7 @@ io.on('connection', (socket) => {
   /* listen for removal of a tracked symbol */
   socket.on('removed', (symbol) => {
     console.log('SYMBOL REMOVED');
-    //utils.updateSymbols('REMOVE', symbol);
+    utils.removeSymbol(symbol);
     //io.emit('update', response);
   });
 

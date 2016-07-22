@@ -1,112 +1,73 @@
 'use strict';
-const dotenv = require('dotenv').config();
-const MONGO_URL = process.env.MONGOLAB_URI;
 
-/* Configure MongoDB */
 const MongoClient = require('mongodb').MongoClient;
 
-module.exports.getSymbols = function getSymbols() {
+module.exports.fetchSymbols = function getSymbols(url) {
   return new Promise( (resolve, reject) => {
 
-    MongoClient.connect(MONGO_URL, (error, db) => {
-      if(error) reject(error);
+    MongoClient.connect(url, (mongoError, db) => {
+      if (mongoError) reject(mongoError);
 
-      db.collection('symbols', (error, collection) => {
-        if(error) reject(error);
+      db.collection('stockade-symbols', (collectionError, collection) => {
+        if (collectionError) reject(collectionError);
 
-          collection.findOne({ name: 'master'}, (error, item) => {
-            if(error) reject(error);
+          collection.findOne({ name: 'dev'}, (itemError, item) => {
+            if (itemError) reject(itemError);
 
             db.close();
-            resolve(item);
+            resolve(item.symbols);
           });
       });
     });
   });
 }
 
-module.exports.updateSymbols = function updateSymbols(mode, symbol) {
+module.exports.addSymbolEntry = function addSymbolEntry(url, symbol) {
   return new Promise((resolve, reject) => {
 
-    MongoClient.connect(MONGO_URL, (error, db) => {
-      if(error) reject(error);
+    MongoClient.connect(url, (mongoError, db) => {
+      if (mongoError) reject(mongoError);
 
-      db.collection('symbols', (error, collection) => {
-        if(error) reject(error);
+      db.collection('stockade-symbols', (collectionError, collection) => {
+        if (collectionError) reject(collectionError);
 
-        switch(mode) {
-          case 'ADD':
-            collection.findOne({ name: 'master' }, (error, item) => {
-              if(error) reject(error);
+        collection.findOne({ name: 'dev' }, (itemError, item) => {
+            if (error) reject(error);
 
-              if(item.list.includes(symbol)) {
-                resolve('Duplicate');
-              } else {
-                collection.update( { name: 'master' },
-                  {
-                    $push : { list : symbol }
-                  }, (error, result) => {
-                    if(error) reject(error);
+            if (item.list.includes(symbol)) {
+              resolve('Duplicate');
 
-                    db.close();
-                    resolve('Success');
-                });
-              }
-            });
-            break;
-          case 'REMOVE':
-            collection.update( { name: 'master' },
-              {
-                $pull : { list: symbol }
-              }, (error, result) => {
-                if(error) reject(error);
+            } else {
+              collection.update({ name: 'dev' }, { $push: { symbols: symbol } }, (updateError, result) => {
+                  if (updateError) reject(updateError);
 
-                db.close();
-                resolve('Success');
+                  db.close();
+                  resolve('Success');
               });
-            break;
-        }
-      })
-    })
+            }
+        });
+      });
+    });
   });
 }
 
+module.exports.remvoleSymbolEntry = function removeSymbolEntry(url, symbol) {
+  return new Promise((resolve, reject) => {
 
-function fetchStockData() {
-  //STOCK DATA PROMISE
-  return new Promise( (resolve, reject) => {
+    MongoClient.connect(url, (mongoError, db) => {
+      if (mongoError) reject(mongoError);
 
-    //DATABASE GET STOCK SYMBOLS PROMISE
-    db.getSymbols().then((result) => {
+      db.collection('stockade-symbols', (collectionError, collection) => {
+        if (collectionError) reject(collectionError);
 
-      if(result) {
-        let stockData = [];
-        let finished = 0;
+        collection.update( { name: 'dev' }, { $pull: { symbols: symbol } }, (updateError, result) => {
 
-        for(let i = 0; i < result.list.length; i++) {
-          let requestString = BASE_URL + result.list[i] + URL_FORMATTER;
+          if (updateError) reject(updateError);
 
-          request.get(requestString, (error, response, body) => {
-            if(error) reject(error);
-
-            let stockObj = {
-              name: result.list[i],
-              data: []
-            };
-
-            JSON.parse(body).dataset_data.data.forEach((d) => {
-              let temp = [ Date.parse(d[0]), d[1] ];
-
-              stockObj.data.push(temp);
-            });
-
-            stockData.push(stockObj);
-
-            console.log(`${result.list[i]} parsed. Finished: ${finished}`);
-            if(++finished === result.list.length) resolve(stockData);
-          });
-        }
-      }
+          db.close();
+          resolve('Success');
+        });
+      });
     });
   });
 }

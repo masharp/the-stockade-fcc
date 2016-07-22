@@ -3,9 +3,9 @@
 /* define modules to pack */
 const ReactDOM = require('react-dom');
 const React = require('react');
-const XHR = require('xhr');
 const Socket = require('socket.io-client')();
 const HighChart = require('react-highcharts');
+const $ = require('jquery').ajax;
 
 const userDimensions = {
   width: window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth,
@@ -48,7 +48,7 @@ const highChartConfig = {
 class Main extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { stockData: [], stockSymbols: [], chartConfig: this.props.config };
+    this.state = { data: [], symbols: [], config: this.props.config, api: null };
 
     this._initiate = this._initiate.bind(this);
     this._update =  this._update.bind(this);
@@ -56,6 +56,9 @@ class Main extends React.Component {
     this._errorRemove = this._errorRemove.bind(this);
     this._submit = this._submit.bind(this);
     this._remove = this._remove.bind(this);
+
+    this.fetchStockData = this.fetchStockData.bind(this);
+    this.configureChart = this.configureChart.bind(this);
   }
   componentDidMount() {
     Socket.on('initiate', this._initiate);
@@ -66,12 +69,8 @@ class Main extends React.Component {
     Socket.on('error:remove', this._errorRemove);
   }
   _initiate(initial) {
-    if (this.state.stockSymbols.length === 0) this.setState({ stockSymbols: initial.map((d) => { return d.name; })});
-    if (this.state.stockData.length === 0) this.setState({ stockData: initial });
-
-    let newConfig = this.state.chartConfig;
-    newConfig.series =  initial;
-    this.setState({ chartConfig: newConfig });
+    this.setState({ symbols: initial.list, api: initial.url });
+    this.fetchStockData();
   }
   _update(update) {
     this.setState({ stockSymbols: update.map((d) => {return d.name; }), stockData: update });
@@ -91,6 +90,45 @@ class Main extends React.Component {
   }
   _remove(symbol) {
     Socket.emit('removed', symbol);
+  }
+  fetchStockData() {
+    const self = this;
+    const params = {
+      Normalized: false,
+      NumberOfDays: 120,
+      DataPeriod: 'Day',
+      Elements: this.state.symbols.map((s) => { return ({ Symbol: s, Type: 'Price', Params: ['ohlc'] }); })
+    };
+
+    $({
+      url: this.state.api,
+      data: { parameters: JSON.stringify(params) },
+      dataType: 'jsonp',
+      success: function(json) {
+        if (!json || json.Message) {
+          console.error(json.Message);
+        }
+        console.log(json);
+
+        self.setState({ data: json });
+      },
+      error: function(response, status) {
+        reject({ response, status });
+      }
+    });
+  }
+  configureChart() {
+    const data = this.state.data;
+
+    let newConfig = this.state.config;
+    newConfig.series = data.map((d) => {
+      return {
+        name: d.Elements.Symbol,
+        color: 'purple',
+        data: d.Elements
+      }
+    });
+
   }
   formatX(d) {
     let formatter = D3Time.format('%Y-%m-%d').parse;

@@ -10,7 +10,6 @@ const compression = require('compression');
 
 /* Route Controllers */
 const index = require('./routes/index.js');
-const api = require('./routes/api.js');
 
 /* time in miliseconds const oneDay = 86400000; */
 const oneMinute = 60000;
@@ -31,7 +30,6 @@ app.use(express.static(path.join(__dirname, 'public'), { maxAge: 0 }));
 
 /* HTTP page routing */
 app.use(index);
-app.use(api);
 
 /* Catch 404 error and forward to error handler */
 app.use((request, response, next) => {
