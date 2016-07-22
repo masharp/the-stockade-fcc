@@ -11,7 +11,7 @@ module.exports.fetchSymbols = function getSymbols(url) {
       db.collection('stockade-symbols', (collectionError, collection) => {
         if (collectionError) reject(collectionError);
 
-          collection.findOne({ name: 'dev'}, (itemError, item) => {
+          collection.findOne({ name: 'production'}, (itemError, item) => {
             if (itemError) reject(itemError);
 
             db.close();
@@ -31,7 +31,7 @@ module.exports.addSymbolEntry = function addSymbolEntry(url, symbol) {
       db.collection('stockade-symbols', (collectionError, collection) => {
         if (collectionError) reject(collectionError);
 
-        collection.findOne({ name: 'dev' }, (itemError, item) => {
+        collection.findOne({ name: 'production' }, (itemError, item) => {
             if (itemError) reject(itemError);
 
             /* check if symbol already exisits or # of symbols === 6 (max for API) */
@@ -43,7 +43,7 @@ module.exports.addSymbolEntry = function addSymbolEntry(url, symbol) {
               resolve('maximum');
             }
             else {
-              collection.update({ name: 'dev' }, { $push: { symbols: symbol } }, (updateError, result) => {
+              collection.update({ name: 'production' }, { $push: { symbols: symbol } }, (updateError, result) => {
                   if (updateError) reject(updateError);
 
                   db.close();
@@ -65,7 +65,7 @@ module.exports.removeSymbolEntry = function removeSymbolEntry(url, symbol) {
       db.collection('stockade-symbols', (collectionError, collection) => {
         if (collectionError) reject(collectionError);
 
-        collection.update( { name: 'dev' }, { $pull: { symbols: symbol } }, (updateError, result) => {
+        collection.update( { name: 'production' }, { $pull: { symbols: symbol } }, (updateError, result) => {
           if (updateError) reject(updateError);
 
           db.close();
