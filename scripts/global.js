@@ -180,12 +180,17 @@ class Main extends React.Component {
     const errorElement = document.getElementById('error');
     const inputElement = document.getElementById('new-symbol-input');
     const newSymbol = inputElement.value;
+    const currentSymbols = this.state.symbols;
 
     inputElement.value = '';
     errorElement.classList.add('hidden');
 
     this.testValidSymbol(newSymbol).then((test) => {
-      if (test || test.symbol) this._add(test.symbol || newSymbol);
+      if (test || test.symbol) {
+        this._add(test.symbol || newSymbol);
+        currentSymbols.push(newSymbol);
+        this.setState({ symbols: currentSymbols });
+      }
       else {
         const errorElement = document.getElementById('error');
         errorElement.innerHTML = 'Invalid Stock Symbol';
@@ -195,6 +200,9 @@ class Main extends React.Component {
   }
   handleRemove(event) {
     const symbol = event.target.classList[1];
+    const currentSymbols = this.state.symbols.filter((x) => x !== symbol);
+
+    this.setState({ symbols: currentSymbols });
     this._remove(symbol);
   }
   /* Test if an input stock symbol is valid and/or assume probable if close */
